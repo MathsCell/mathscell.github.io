@@ -31,6 +31,7 @@ We work by project. A researcher or engineer of TBI of elsewhere can propose an 
  - **[IsoSolve](https://github.com/MetaSys-LISBP/IsoSolve)**, a project with [MetaSys](http://www.toulouse-biotechnology-institute.fr/en/research/molecular-physiology-and-metabolism/metasys.html) team of TBI. The goal was to propose a unified framework for NMR/MS measurements on isotopically labeled metabolites. [Preprint](https://www.biorxiv.org/content/10.1101/2021.03.08.430771v1).
  - **Influx2020**, a project with [MetaToul/Metabolic network](http://www.toulouse-biotechnology-institute.fr/en/technology_platforms/metabolomics-fluxomics.html) about adapting [influx_si](https://metasys.insa-toulouse.fr/software/influx/) software to high throughput experimental context.
  - **G3Mclass**, a project with Dr. Marina Guvakova, researcher in the University of Pennsylvania. The goal of the project is to develop a classifier for fine exploring of metabolic markers.
+ - **[MetaboHub2](https://www.metabohub.fr/home.html)**, we participate in Workpackage 3 Task 4 (flux modeling) of this national-wide french consortium.
  
 ## Software we developed
  - [influx_si](https://metasys.insa-toulouse.fr/software/influx/) metabolic flux/concentration estimation based on isotopic measurements;
