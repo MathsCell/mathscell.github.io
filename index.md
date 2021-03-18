@@ -38,19 +38,23 @@ We work by project. A researcher or engineer of TBI of elsewhere can propose an 
  - [IsoSolve](https://github.com/MetaSys-LISBP/IsoSolve) a unified framework for NMR/MS isotopic measurements;
  - [Deriv](https://cran.r-project.org/package=Deriv) symbolic differentiation of R code for mathematical expressions;
  - [rmumps](https://cran.r-project.org/package=rmumps) an R wrapper for [MUMPS library](http://mumps.enseeiht.fr/index.php?page=home) for sparse linear system solving;
- - [r2sundials](https://cran.r-project.org/package=r2sundials) an R wrapper for [Sundials library](https://computing.llnl.gov/projects/sundials/) for ODE/sensitivity problem solving;
+ - [r2sundials](https://cran.r-project.org/package=r2sundials) an R wrapper for [Sundials library](https://computing.llnl.gov/projects/sundials/) for ODE/sensitivity problem solving.
  
 ## Staff
 
  - Serguei Sokol, PhD in applied mathematics, IR INRAE.
  
 ## Contact
-email: sokol [at] insa-toulouse.fr
+email: Serguei.Sokol [at] insa-toulouse.fr
 
 Mail:<br/>
 INSA/TBI/Cellule Mathématiques<br/>
 135, avenue de Rangueil<br/>
 31077 Toulouse Cedex 04
 
-Site web: https://mathscell.github.io/
+Office: 417
+
+[Web site](https://mathscell.github.io/)<br/>
+[Newsletters](https://mathscell.github.io/news/)<br>
+[Youtube channel](https://www.youtube.com/channel/UCZRisfleqV4Uc0Hf_E3WQgw)
 

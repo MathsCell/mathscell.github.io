@@ -1,0 +1,67 @@
+<html>
+<head>
+   <style>
+      body {background-color: white;}
+      h1 {color: darkcyan;}
+      p {color: darkcyan; font-size: 75%}
+      fieldset {border-style:solid; border-width:3px; border-color:darkcyan; border-radius: 15px; padding: 20px; margin-top: 20px}
+      legend {color: darkcyan; font-size: 125%}
+   </style>
+</head>
+<body>
+   <h1>MathsCellNews N°1, March 18, 2021</h1>
+   <p>Newsletter edited by <i><a href="https://mathscell.github.io/">Mathematics Cell</a></i> of TBI.<br>
+   <b>Contact:</b> Serguei.Sokol (at) insa-toulouse.fr
+   </p>
+
+   <fieldset>
+   <legend>Newsletter Presentation</legend>
+   <div>
+      <a href="https://mathscell.github.io/">Mathematics Cell</a> is a part of Toulouse Biotechnology Institute <i>Bio & Chemical Engineering</i> (<a href="http://www.toulouse-biotechnology-institute.fr/en/index.html">TBI</a>) and is focused on mathematical modeling of biochemical systems. We have decided to edit this newsletter to inform our partners, actual and potential, about our advances as well as about past, current, and future projects. All this is done with the hope to inspire new collaborations and make spread the use of already published solutions. Please welcome our first issue and feel free to make it follow to anyone who may be interested.
+   </div>
+   </fieldset>
+
+   <fieldset>
+   <legend>Recent publication: <tt>IsoSolve</tt> offers a novel framework unifying NMR and MS measurements</legend>
+   <div>
+      This month, we have finished our joint project with the <a href="http://www.toulouse-biotechnology-institute.fr/en/research/molecular-physiology-and-metabolism/metasys.html">MetaSys</a> team of TBI. It aimed at developing software realizing a unified framework for NMR and MS measurements made on isotopically labeled molecules. The published software <tt><a href="https://github.com/MetaSys-LISBP/IsoSolve">IsoSolve</a></tt> even goes beyond current measurement techniques as its formalism is general enough to include any experimental techniques including future ones. So, if you are interested in
+      <list>
+      <li>getting more information from combining NMR/MS measurements then each technique can provide separately;</li>
+      <li>exploring isotopic coverage or complementarity of used (or planned) techniques;</li>
+      <li>or consolidating data sets to improve accuracy and precision or simply detect if there is one measurement discordant from the rest of the set</li>
+      </list>
+      you can freely try <tt>pip3 install --user isosolve</tt><br/>
+      or maybe you prefer to start by reading our <a href="https://www.biorxiv.org/content/10.1101/2021.03.08.430771v1">preprint</a> or else try our Jupyter <a href="https://github.com/MetaSys-LISBP/IsoSolve_notebook">notebook</a> and of course, <a href="https://isosolve.readthedocs.io/en/latest/">readthedocs</a>.
+   </div>
+   </fieldset>
+   
+   <fieldset>
+   <legend>Current project: Influx2020 for new ergonomy and features in <tt>influx_si</tt></legend>
+   <div>
+      <tt><a href="https://metasys.insa-toulouse.fr/software/influx/">influx_si</a></tt> is a free software used in the <a href="http://www.toulouse-biotechnology-institute.fr/en/technology_platforms/metabolomics-fluxomics.html">MetaToul platform</a> (and beyond) to estimate metabolic fluxes and concentrations based on measurements of isotopic data. It was first released in 2011 and since then acquired many unique features. But now, when high throughput experimental workflows became usual, it requires some new features and ergonomy. It is, for example, desirable to multiplex one given metabolic model with many different experimental datasets. Before, a model and data were tightly packed in one input file. In the future, it will be possible to "factorize" them. That was one of the reasons behind the launching of this project jointly with <a href="http://www.toulouse-biotechnology-institute.fr/en/technology_platforms/metabolomics-fluxomics.html">MetaToul platform/Metabolic Network plateau</a>. You can follow <tt>influx_si</tt> evolution on its official <a href="https://metasys.insa-toulouse.fr/software/influx/">page</a>. One of the newly added features, namely label input varying in time, will be presented in a zoom <a href="https://zoom.us/j/97819179854?pwd=Tno1bXNyeG80bjE5VWJpQ2lkZUd0dz09">webinar</a> at 10:00 am, on March 24, 2021. Feel free to join.
+   </div>
+   </fieldset>
+
+   <fieldset>
+   <legend>New project: G3Mclass for fine exploring of metabolic markers</legend>
+   In biomedicine, numerous assays work with binary assessment of a marker: is it higher or lower of a defined threshold? However, in some situations, this can reveal insufficient as shown in a <a href="https://cancerres.aacrjournals.org/content/79/13/3492.article-info">paper</a> of our partner, a researcher from the University of Pennsylvania. In certain cases, the marker expression can be increased to a different extent in some patients and decreased in some other patients diagnosed with the same disease. This can have a strong impact on recruiting campaigns of patients in clinical trials as well as treatment outcomes. If, for instance, the test drug is supposed to suppress the gene product, the targeted therapy can be inefficient (even harmful) for patients having this gene already silenced naturally. That's why there is a big need for innovative tools evaluating various markers in various situations compared to a disease-free state. That's precisely the point of this next software <tt>G3Mclass</tt> (Gaussian Mixture Model for Metabolic Classification) which is targeted at inventive evaluation of biomarkers, including molecular, metabolic, and biochemical markers. Stay tuned to this keyword <tt>G3Mclass</tt> if you are interested in the subject.
+   <div>
+
+   </div>
+   </fieldset>
+
+   <fieldset>
+   <legend>Video: playing with parameters of the upper glycolysis pathway</legend>
+   <div>
+      We made a <a href="https://www.youtube.com/watch?v=5kdYMcnoDbI">short video</a> illustrating real-time dynamic response to manual parameter variation in the upper glycolysis pathway. This toy example shows how <tt>cbior</tt> software (under development in MathsCell) can facilitate answering questions like:
+      <list>
+          <li>What if I improve the efficiency of such or such enzyme (i.e. change its <i>K<sub>m</sub></i>)? How will it impact the pathway dynamics?</li>
+          <li>How the pathway dynamics will react if I increase/decrease the amount of such or such enzyme (i.e. change its <i>V<sub>m</sub></i>)?</li>
+          <li>What if I start with different initial concentrations?</li>
+      </list>
+      You will see that the responses to these questions can be obtained in real-time just by moving sliders corresponding to parameters of interest.<br>
+      Besides, if you wish to reproduce some published dynamic model to see how it is easy or difficult to adapt <tt>cbior</tt> to your research field, please contact us. Porting such cases to <tt>cbior</tt> could familiarize you with <tt>cbior</tt> features, generate collaboration ideas and abound our example library. Feel free to subscribe to our <a href="https://www.youtube.com/channel/UCZRisfleqV4Uc0Hf_E3WQgw">youtube channel</a>.
+   </div>
+   </fieldset>
+</body>
+</html>
