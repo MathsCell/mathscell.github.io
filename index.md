@@ -3,7 +3,7 @@ title: Mathematics Cell of TBI
 output: html_document
 ---
 
-Mathematics Cell is a part of Toulouse Biotechnology Institute Bio & Chemical Engineering ([TBI](http://www.toulouse-biotechnology-institute.fr/en/index.html)). It is focused on mathematical modeling of biochemical and microbial systems.
+Mathematics Cell is a part of Toulouse Biotechnology Institute, *Bio & Chemical Engineering* ([TBI](http://www.toulouse-biotechnology-institute.fr/en/index.html)). It is focused on mathematical modeling of biochemical and microbial systems.
 
 ## What Mathematics Cell proposes?
 
@@ -51,3 +51,6 @@ Mail:<br/>
 INSA/TBI/Cellule Mathématiques<br/>
 135, avenue de Rangueil<br/>
 31077 Toulouse Cedex 04
+
+Site web: https://mathscell.github.io/
+
