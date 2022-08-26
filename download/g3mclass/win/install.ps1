@@ -31,5 +31,5 @@ $shortcut = $WscriptObj.CreateShortcut($ShortcutPath)
 $shortcut.TargetPath = $pref
 $shortcut.Arguments = "$parg"
 $shortcut.WindowStyle = 7
-$shortcut.IconLocation="$env:userprofile\Downloads\g3m.ico"
+$shortcut.IconLocation="$pdiri\g3m.ico"
 $shortcut.Save()
