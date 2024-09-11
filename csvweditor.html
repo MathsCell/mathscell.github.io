@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>CSVW editor</title>
+    <style>
+        body {
+          width: 100vw;
+          background-color: #ddd;
+          font-family: sans-serif;
+        }
+        .legal {
+          font-size: 10px;
+          padding: 1rem 10px;
+        }
+        .container {
+          //height: 100vh;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .form-control {
+          display: block;
+          width: 300px;
+          margin: 10px 0;
+          padding: 10px;
+          border-radius: 5px;
+          border: 2px solid #172432;
+        }
+        button {
+          display: inline-block;
+          background-color: #172432;
+          border: none;
+          color: #ddd;
+          padding: 10px 20px;
+          border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body id="body">
+    <h1>CSVW Editor</h1>
+    <p>This page offers editing of some basic metadata for a
+      <a href="https://datatracker.ietf.org/doc/html/rfc4180">CSV</a> file and storing them in <a href="https://csvw.org/">CSVW</a> format.</p>
+    <p>Fill the form. Mandatory fields are labeled with asterisk (*).<br/>
+      If needed, add column descriptor by clicking on "Add column" and/or add optional fields by clicking on "Add optional field".<br/>
+      At the end, click on "Submit". The content will be stored on your local disk, in a file "<i>file_name</i>-metadata.csvw".
+    </p>
+    <div id="container" class="container">
+      <form action="" id="csvw", enctype="multipart/form-data">
+        <label for="upload">Upload CSV or CSVW file (if any) to pre-fill the form</label>
+        <input id="upload" class="form-control" type="file" accept="text/csv,.csvw,.tsv" name="files" size=30>
+        <label for="sep">Field separator: </label>
+        <select id="sep" class="form-control" style="display:inline-block;width:53%">
+            <option value="," selected="true">Comma ","</option>
+            <option value=";">Semicolon ";"</option>
+            <option value=":">Colon ":"</option>
+            <option value="&#9;">Tab character "\t"</option>
+            <option value=" ">Space " "</option>
+        </select>
+
+        <h3>CSVW fields:</h3>
+        <!-- this form is completed by script -->
+        <datalist id="datatypes">
+          <option value="string"/>
+          <option value="integer"/>
+          <option value="double"/>
+          <option value="boolean"/>
+          <option value="date"/>
+          <option value="datetime"/>
+          <option value="time"/>
+        </datalist>
+
+        <input type="button" id="btn_add" onclick="add_col()" value="Add column" class="form-control" style="display:inline-block;width:59%">
+        <input type="button" id="btn_rm" onclick="rm_last_col()" value="Remove" class="form-control" style="display:inline-block;width:25%">
+        <input type="hidden" id="col_nb" value=0>
+        <label for="btn_add_opt" id="lab_add_opt" class="form-control">
+          <input type="button" id="btn_add_opt" onclick="add_opt()" value="Add optional field" class="form-control" style="display:inline-block;width:65%" >
+          <input type="button" id="btn_rm_opt" onclick="rm_opt()" value="Remove" class="form-control" style="display:inline-block;width:25%" >
+          Optional fields can refer to or contain:
+          <ul>
+            <li>used protocol</li>
+            <li>project id</li>
+            <li>used ontology, thesaurus, ...</li>
+            <li>simple note, etc.</li>
+          </ul>
+        </label>
+        <input type="hidden" id="opt_nb" value=0>
+        <button type="submit" id="submit">Submit</button>
+        <button type="button" id="reset" onclick="do_reset()">Reset</button>
+      </form>
+      <!--textarea class="form-control" rows=35 cols=120 id="txtupl"></textarea-->
+    </div>
+    <div id=legal class=legal>
+      <p>
+        <b>Legal information.</b><br/>
+        Author: Sergueï Sokol, INRAE/<a href="https://www.toulouse-biotechnology-institute.fr/">TBI</a>, <a href="https://www.toulouse-biotechnology-institute.fr/plateformes-plateaux/cellule-mathematiques/">Mathematics Cell</a>, CATI <a href="https://prosodie.cati.inrae.fr/">PROSODIe</a><br>
+        Project home: <a href="https://forgemia.inra.fr/mathscell/csvweditor">CSVWEditor</a><br/>
+        Copyright: 2024 <a href="https://www.inrae.fr/">INRAE</a>/<a href="https://www.insa-toulouse.fr/">INSA</a>/<a href="https://www.cnrs.fr/">CNRS</a><br/>
+        License: <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC-BY</a><br/>
+        Version: 0.3.0<br/>
+        Issue report: <a href="https://forgemia.inra.fr/mathscell/csvweditor/-/issues">Forge MIA</a>
+      </p>
+    </div>
+    <script>
+        let csvwForm = document.getElementById("csvw");
+        let btn_add=document.getElementById("btn_add");
+        let col_nb = document.getElementById("col_nb");
+        let csv={"json": {}};
+        let form={ // id: dict of html attributes + json
+            "date": {"el": "input", "lab": "Date of CSV creation (*)", "type": "datetime-local", "class": "form-control", "value": "", "json": "dc:date"},
+            "url": {"el": "input", "lab": "Url (*)", "type": "text", "class": "form-control", "placeholder": "CSV file name", "json": "url"},
+            "title": {"el": "input", "lab": "Title", "type": "text", "class": "form-control", "placeholder": "Title (in Capitalized Form)", "json": "dc:title"},
+            "descr": {"el": "textarea", "lab": "Description", "type": "textarea", "rows": 5, "class": "form-control", "placeholder": "Description of CSV content", "json": "dc:description"},
+            "creator": {"el": "input", "lab": "Creator (*)", "type": "text", "class": "form-control", "placeholder": "Person(s) or entity(s) who created CSV", "json": "dc:creator"},
+            "prov": {"el": "input", "lab": "Provenance of CSV file", "type": "text", "class": "form-control", "placeholder": "Software, device, ...", "json": "dc:provenance"},
+        }
+        // complete the form
+        for (id in form) {
+            var di=form[id];
+            var lab=null;
+            if (di["lab"]) {
+                lab=document.createElement("Label");
+                lab.setAttribute("for", id);
+                lab.innerHTML=di["lab"];
+            }
+            var inp=document.createElement(di["el"]);
+            inp.setAttribute("id", id);
+            for (attr in di) {
+                if (attr == "el" || attr == "lab" || attr == "json")
+                    continue;
+                inp.setAttribute(attr, di[attr]);
+            }
+            csvwForm.insertBefore(inp, btn_add);
+            if (lab !== null)
+              csvwForm.insertBefore(lab, inp);
+        }
+        let date = document.getElementById("date");
+        // helper functions
+        function set_date(sec="") {
+            d=(sec === "" ? new Date() : new Date(sec));
+            //console.log("sec=", sec, "; d=", d);
+            const offset = d.getTimezoneOffset() * 60 * 1000;
+            d=new Date(d.getTime() - offset);
+            date.value=d.toISOString().slice(0, 16);
+        }
+        function add_col() {
+            // check that col_nb correspond to real column Number
+            var n=col_nb.value;
+            for (let i=0; i < n; i++) {
+                inp=document.getElementById(`col${col_nb.value}_name`);
+                //console.log("rm col ", i, col_nb);
+                if (inp === null)
+                    rm_last_col();
+                else {
+                    break;                }
+            }
+            col_nb.value = Number(col_nb.value) + 1;
+            // title
+            var col = document.createElement("input");
+            col.setAttribute('type', 'text');
+            col.setAttribute('id', `col${col_nb.value}_name`);
+            col.setAttribute('placeholder', "Name");
+            col.setAttribute('class', "form-control");
+            // description
+            var colde = document.createElement("input");
+            colde.setAttribute('type', 'text');
+            colde.setAttribute('id', `col${col_nb.value}_descr`);
+            colde.setAttribute('placeholder', "Description (units, format, ...)");
+            colde.setAttribute('class', "form-control");
+            // datatype
+            var coldt = document.createElement("input");
+            coldt.setAttribute('type', 'search');
+            coldt.setAttribute('list', 'datatypes');
+            coldt.setAttribute('type', 'text');
+            coldt.setAttribute('id', `col${col_nb.value}_datatype`);
+            coldt.setAttribute('placeholder', "Data type");
+            coldt.setAttribute('class', "form-control");
+
+            var lab = document.createElement("Label");
+            lab.setAttribute('id', `col${col_nb.value}_lab`)
+            lab.setAttribute("for", col);
+            lab.innerHTML = "Column "+col_nb.value;
+
+            csvwForm.insertBefore(col, btn_add);
+            csvwForm.insertBefore(colde, btn_add);
+            csvwForm.insertBefore(coldt, btn_add);
+            csvwForm.insertBefore(lab, col);
+        }
+        function rm_last_col() {
+            //console.log("in rm ", col_nb);
+            if (col_nb.value > 0) {
+                for (suf of ["name", "descr", "datatype", "lab"]) {
+                    //console.log(`col${col_nb.value}_`+suf);
+                    let obj=document.getElementById(`col${col_nb.value}_`+suf)
+                    //console.log("obj=", obj);
+                    if (obj)
+                        csvwForm.removeChild(obj);
+                }
+                col_nb.value -= 1;
+            }
+        }
+        function add_opt() {
+            opt_nb.value = Number(opt_nb.value) + 1;
+            // key
+            var optk = document.createElement("input");
+            optk.setAttribute('type', 'text');
+            optk.setAttribute('id', `opt${opt_nb.value}_key`);
+            optk.setAttribute('placeholder', "name");
+            optk.setAttribute('class', "form-control");
+            optk.setAttribute('style', "display:inline-block;width:15%");
+            // value
+            var optv = document.createElement("input");
+            optv.setAttribute('type', 'text');
+            optv.setAttribute('id', `opt${opt_nb.value}_value`);
+            optv.setAttribute('placeholder', "value Or val1, val2, val3, ... if vector");
+            optv.setAttribute('class', "form-control");
+            optv.setAttribute('style', "display:inline-block;width:55%");
+            // is vector?
+            var isvec = document.createElement("input");
+            isvec.setAttribute('type', 'checkbox');
+            isvec.setAttribute('id', `opt${opt_nb.value}_isvec`);
+
+            var lab = document.createElement("Label");
+            lab.setAttribute("id", `opt${opt_nb.value}_lab`);
+            lab.setAttribute("for", optk);
+            lab.innerHTML = "<br/>Optional field "+opt_nb.value+" (";
+
+            var labv = document.createElement("Label");
+            labv.setAttribute("for", isvec);
+            labv.setAttribute('id', `opt${opt_nb.value}_labv`);
+            labv.innerHTML = " vector?)<br/>";
+
+            var btn=document.getElementById("lab_add_opt");
+            csvwForm.insertBefore(optk, btn);
+            csvwForm.insertBefore(optv, btn);
+            csvwForm.insertBefore(lab, optk);
+            csvwForm.insertBefore(isvec, lab.nextSibling);
+            csvwForm.insertBefore(labv, isvec.nextSibling);
+        }
+        function rm_opt() {
+            if (opt_nb.value > 0) {
+                //console.log("rm_opt ", opt_nb);
+                for (suf of ["key", "value", "isvec", "lab", "labv"]) {
+                    var obj=document.getElementById(`opt${opt_nb.value}_`+suf)
+                    if (obj) {
+                        //console.log("rm obj", obj);
+                        csvwForm.removeChild(obj);
+                    }
+                }
+                opt_nb.value -= 1;
+            }
+        }
+        async function saveFile() {//
+            // (A) CREATE BLOB OBJECT
+            // complete JSON object from the csvw form
+            // "common" part
+            csv.json["@context"]="http://www.w3.org/ns/csvw";
+            if (!("tables" in csv.json))
+                csv.json.tables=[{}];
+            for (id in form) {
+                di=form[id];
+                if ("json" in di)
+                    csv.json.tables[0][di["json"]]=id == "date" ? new Date(document.getElementById(id).value).toISOString() : document.getElementById(id).value;
+            }
+            // "by column" part
+            if (!("tableSchema" in csv.json.tables[0]))
+                csv.json.tables[0]["tableSchema"]={};
+            if (!("columns" in csv.json.tables[0]["tableSchema"]))
+                csv.json.tables[0]["tableSchema"]["columns"]=Array(Number(col_nb.value));
+            //console.log("before cols", csv.json.tables[0]["tableSchema"]["columns"]);
+            for (var icol=0; icol < col_nb.value; icol++) {
+                csv.json.tables[0]["tableSchema"]["columns"][icol] = {
+                  "name": document.getElementById(`col${Number(icol)+1}_name`).value,
+                  "dc:description": document.getElementById(`col${Number(icol)+1}_descr`).value,
+                  "datatype": document.getElementById(`col${Number(icol)+1}_datatype`).value
+                };
+                //console.log(icol, csv.json.tables[0]["tableSchema"]["columns"][icol]);
+            }
+            //console.log("after cols", csv.json.tables[0]["tableSchema"]["columns"]);
+            // "optional" part
+            for (var iopt=0; iopt < opt_nb.value; iopt++) {
+                //console.log(document.getElementById(`opt${opt_nb.value}_isvec`));
+                val=document.getElementById(`opt${Number(iopt)+1}_value`).value;
+                val=document.getElementById(`opt${Number(iopt)+1}_isvec`).checked ? csvStringToArray(val)[0] : val;
+                csv.json.tables[0][document.getElementById(`opt${Number(iopt)+1}_key`).value]=val;
+            }
+
+            var myBlob = new Blob([JSON.stringify(csv.json, null, 2)], {type: "application/csvm+json"});
+            // (B) CREATE DOWNLOAD LINK
+            var url = window.URL.createObjectURL(myBlob);
+            var anchor = document.createElement("a");
+            anchor.href = url;
+            let nm=document.getElementById("url").value;
+            anchor.download = nm.replace(/\.[^/.]+$/, "")+"-metadata.csvw";
+
+            // (C) "FORCE DOWNLOAD"
+            // NOTE: MAY NOT ALWAYS WORK DUE TO BROWSER SECURITY
+            // BETTER TO LET USERS CLICK ON THEIR OWN
+            anchor.click();
+            //window.URL.revokeObjectURL(url);
+            //document.removeChild(anchor);
+            delete(anchor);
+        }
+        function handle_file_select( evt ) {
+            let fl_files = evt.target.files; // JS FileList object
+            // use the 1st file from the list
+            let fl_file = fl_files[0];
+            //console.log(fl_file);
+            csv.name=fl_file.name;
+            csv.ext=csv.name.split(".").pop().toLowerCase();
+            let reader = new FileReader(); // built in API
+            var sep=csvwForm.sep.value;
+
+            let display_file = ( e ) => { // parse and prefill the form and csv.json object
+                csv.txt=e.target.result;
+                csv.arr=csvStringToArray(csv.txt, sep);
+                csv.ncol=csv.arr[0].length;
+                if (csv.arr.length > 1 && csv.arr[0].length == csv.arr[1].length-1) {
+                    csv.ncol++;
+                    csv.arr[0] = [""].concat(csv.arr[0]);
+                }
+                do_reset();
+                csvwForm.sep.value=sep;
+                if (csv.ext !== "csvw") {
+                    csvwForm.url.value=csv.name;
+                    set_date(fl_file.lastModified);
+                    //document.getElementById( 'txtupl' ).innerHTML = .join("\n");
+                    for (icol in csv.arr[0]) {
+                        inp=document.getElementById(`col${col_nb.value}_name`);
+                        inp.setAttribute("value", csv.arr[0][icol]);
+                        if (icol < csv.ncol-1)
+                            add_col();
+                    }
+                    csv.json={};
+                } else {
+                    csv.json=JSON.parse(csv.txt);
+                    //console.info( 'csvw: ', csv.json );
+                    var setj=new Set();
+                    for (id in form) {
+                        di=form[id];
+                        if ("json" in di) {
+                            setj.add(di["json"]);
+                            if ("tables" in csv.json && csv.json.tables.constructor === Array && csv.json.tables.length > 0 && di["json"] in csv.json.tables[0])
+                                if (id == "date")
+                                    set_date(csv.json.tables[0][di["json"]]);
+                                else
+                                    document.getElementById(id).value=csv.json.tables[0][di["json"]];
+                        }
+                    }
+                    if ("tables" in csv.json && csv.json.tables.constructor === Array && csv.json.tables.length > 0 && "tableSchema" in csv.json.tables[0] && "columns" in csv.json.tables[0].tableSchema) {
+                        csv.ncol=csv.json.tables[0].tableSchema.columns.length;
+                        for (icol in csv.json.tables[0].tableSchema.columns) {
+                            if (col_nb.value <= icol)
+                                add_col();
+                            document.getElementById(`col${Number(icol)+1}_name`).value=csv.json.tables[0].tableSchema.columns[icol].name;
+                            document.getElementById(`col${Number(icol)+1}_descr`).value=csv.json.tables[0].tableSchema.columns[icol]["dc:description"];
+                            document.getElementById(`col${Number(icol)+1}_datatype`).value=csv.json.tables[0].tableSchema.columns[icol].datatype;
+                        }
+                    }
+                    // optional fields
+                    if ("tables" in csv.json && csv.json.tables.constructor === Array && csv.json.tables.length > 0) {
+                        var iopt=0;
+                        for (idj in csv.json.tables[0]) {
+                            if (setj.has(idj) || idj == "tableSchema")
+                                continue;
+                            if (opt_nb.value <= iopt)
+                                add_opt();
+                            document.getElementById(`opt${Number(iopt)+1}_key`).value=idj;
+                            if (csv.json.tables[0][idj].constructor === Array) {
+                                document.getElementById(`opt${Number(iopt)+1}_isvec`).checked=true;
+                                var line=[];
+                                for (item of csv.json.tables[0][idj]) {
+                                    item=String(item);
+                                    if (item.indexOf(',') !== -1 ||
+                                        item.indexOf('"') !== -1 ||
+                                        item.indexOf('\r') !== -1 ||
+                                        item.indexOf('\n') !== -1)
+                                        item='"' + item.replace(/"/g, '""') + '"';
+                                    line.push(item);
+                                }
+                                document.getElementById(`opt${Number(iopt)+1}_value`).value=line.join(", ");
+                            } else {
+                                document.getElementById(`opt${Number(iopt)+1}_value`).value=csv.json.tables[0][idj];
+                            }
+                            iopt++;
+                        }
+                    }
+                }
+            };
+
+            let on_reader_load = ( fl ) => {
+                //console.info( '. file reader load', fl );
+                return display_file; // a function
+            };
+
+            // Closure to capture the file information.
+            reader.onload = on_reader_load( fl_file );
+
+            // Read the file as text.
+            reader.readAsText( fl_file );
+        }
+        function csvStringToArray(strData, sep=",") {
+            // from https://gist.github.com/Jezternz/c8e9fafc2c114e079829974e3764db75
+            //const objPattern = new RegExp(("(\\,|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\\,\\r\\n]*))"),"gi");
+            var objPattern = /(,|\r?\n|\r|^) *(?: *"([^\\"]*(?:""[^"]*)*)" *|([^,\r\n]*))/gi;
+            if (sep != ",")
+                objPattern=new RegExp(objPattern.source.replaceAll(",", sep), "gi");
+            if (sep == " ")
+                objPattern=new RegExp(objPattern.source.replaceAll(" *", ""), "gi");
+            //console.log(objPattern);
+            let arrMatches = null, arrData = [[]];
+            while (arrMatches = objPattern.exec(strData)){
+                //console.log("i=" + i + "\n" + arrMatches);
+                if (arrMatches[1].length && arrMatches[1] !== sep) arrData.push([]);
+                arrData[arrData.length - 1].push(//arrMatches[2] ?
+                    //arrMatches[2].replace(new RegExp( "\"\"", "g" ), "\"") :
+                    arrMatches[2] !== undefined ? arrMatches[2].replace(/""/g, '"') :
+                    arrMatches[3]);
+            }
+            return arrData;
+        }
+        function do_reset() {
+            //document.getElementById("upload").value="";
+            document.getElementById("sep").value=",";
+            for (id in form) {
+                di=form[id];
+                document.getElementById(id).value="";
+            }
+            set_date();
+            while (col_nb.value > 0)
+                rm_last_col();
+            add_col();
+            while (opt_nb.value > 0)
+                rm_opt();
+        }
+        if (date.value == "")
+            set_date();
+        if (col_nb.value == 0)
+            add_col();
+        csvwForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            let url = document.getElementById("url");
+            let creator = document.getElementById("creator");
+
+            if (date.value == "" || url.value == "" || creator.value == "" || col_nb.value == 0) {
+                alert("Ensure you input a value in following fields: Date, Url, Creator and at least 1 column is described");
+            } else {
+                // perform operation with form input
+                //alert("This form has been successfully submitted!");
+                //document.getElementById("body").innerHTML = "My First csvw json";
+                saveFile();
+            }
+        });
+        document.getElementById('upload').addEventListener('change', handle_file_select, false);
+    </script>
+</body>
+</html>
