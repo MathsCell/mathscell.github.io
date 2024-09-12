@@ -100,7 +100,7 @@
         Project home: <a href="https://forgemia.inra.fr/mathscell/csvweditor">CSVWEditor</a><br/>
         Copyright: 2024 <a href="https://www.inrae.fr/">INRAE</a>/<a href="https://www.insa-toulouse.fr/">INSA</a>/<a href="https://www.cnrs.fr/">CNRS</a><br/>
         License: <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC-BY</a><br/>
-        Version: 0.3.0<br/>
+        Version: 0.4.0 (2024-09-12)<br/>
         Issue report: <a href="https://forgemia.inra.fr/mathscell/csvweditor/-/issues">Forge MIA</a>
       </p>
     </div>
@@ -115,7 +115,7 @@
             "title": {"el": "input", "lab": "Title", "type": "text", "class": "form-control", "placeholder": "Title (in Capitalized Form)", "json": "dc:title"},
             "descr": {"el": "textarea", "lab": "Description", "type": "textarea", "rows": 5, "class": "form-control", "placeholder": "Description of CSV content", "json": "dc:description"},
             "creator": {"el": "input", "lab": "Creator (*)", "type": "text", "class": "form-control", "placeholder": "Person(s) or entity(s) who created CSV", "json": "dc:creator"},
-            "prov": {"el": "input", "lab": "Provenance of CSV file", "type": "text", "class": "form-control", "placeholder": "Software, device, ...", "json": "dc:provenance"},
+            "source": {"el": "input", "lab": "Source of CSV file", "type": "text", "class": "form-control", "placeholder": "Software, device, ...", "json": "dc:source"},
         }
         // complete the form
         for (id in form) {
@@ -288,7 +288,7 @@
                 csv.json.tables[0][document.getElementById(`opt${Number(iopt)+1}_key`).value]=val;
             }
 
-            var myBlob = new Blob([JSON.stringify(csv.json, null, 2)], {type: "application/csvm+json"});
+            var myBlob = new Blob([JSON.stringify(csv.json, null, 2)+"\n"], {type: "application/csvm+json"});
             // (B) CREATE DOWNLOAD LINK
             var url = window.URL.createObjectURL(myBlob);
             var anchor = document.createElement("a");
