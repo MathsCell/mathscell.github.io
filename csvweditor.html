@@ -9,10 +9,10 @@
           width: 100vw;
           background-color: #ddd;
           font-family: sans-serif;
+          padding: 10px 20px;
         }
         .legal {
           font-size: 10px;
-          padding: 1rem 10px;
         }
         .container {
           //height: 100vh;
@@ -23,7 +23,7 @@
         }
         .form-control {
           display: block;
-          width: 300px;
+          width: 500px;
           margin: 10px 0;
           padding: 10px;
           border-radius: 5px;
@@ -53,7 +53,7 @@
         <label for="upload">Upload CSV or CSVW file (if any) to pre-fill the form</label>
         <input id="upload" class="form-control" type="file" accept="text/csv,.csvw,.tsv" name="files" size=30>
         <label for="sep">Field separator: </label>
-        <select id="sep" class="form-control" style="display:inline-block;width:53%">
+        <select id="sep" class="form-control" style="display:inline-block;width:200px;">
             <option value="," selected="true">Comma ","</option>
             <option value=";">Semicolon ";"</option>
             <option value=":">Colon ":"</option>
@@ -69,23 +69,23 @@
           <option value="double"/>
           <option value="boolean"/>
           <option value="date"/>
-          <option value="datetime"/>
           <option value="time"/>
         </datalist>
 
-        <input type="button" id="btn_add" onclick="add_col()" value="Add column" class="form-control" style="display:inline-block;width:59%">
-        <input type="button" id="btn_rm" onclick="rm_last_col()" value="Remove" class="form-control" style="display:inline-block;width:25%">
+        <input type="button" id="btn_add" onclick="add_col()" value="Add column" class="form-control" style="display:inline-block;width:200px">
+        <input type="button" id="btn_rm" onclick="rm_last_col()" value="Remove" class="form-control" style="display:inline-block;width:100px">
         <input type="hidden" id="col_nb" value=0>
         <label for="btn_add_opt" id="lab_add_opt" class="form-control">
-          <input type="button" id="btn_add_opt" onclick="add_opt()" value="Add optional field" class="form-control" style="display:inline-block;width:65%" >
-          <input type="button" id="btn_rm_opt" onclick="rm_opt()" value="Remove" class="form-control" style="display:inline-block;width:25%" >
-          Optional fields can refer to or contain:
+          <input type="button" id="btn_add_opt" onclick="add_opt()" value="Add optional field" class="form-control" style="display:inline-block;width:185px" >
+          <input type="button" id="btn_rm_opt" onclick="rm_opt()" value="Remove" class="form-control" style="display:inline-block;width:100px">
+          <br/>Optional field can refer to or contain:
           <ul>
             <li>used protocol</li>
             <li>project id</li>
             <li>used ontology, thesaurus, ...</li>
             <li>simple note, etc.</li>
           </ul>
+          Cf. for example <a href="https://recherche.data.gouv.fr/en/category/39/guide/guide-to-entering-common-metadata">metadata</a> for repository <a href="https://recherche.data.gouv.fr">data.gouv.fr</a>
         </label>
         <input type="hidden" id="opt_nb" value=0>
         <button type="submit" id="submit">Submit</button>
@@ -100,11 +100,13 @@
         Project home: <a href="https://forgemia.inra.fr/mathscell/csvweditor">CSVWEditor</a><br/>
         Copyright: 2024 <a href="https://www.inrae.fr/">INRAE</a>/<a href="https://www.insa-toulouse.fr/">INSA</a>/<a href="https://www.cnrs.fr/">CNRS</a><br/>
         License: <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC-BY</a><br/>
-        Version: 0.4.0 (2024-09-12)<br/>
+        <span id="version">Placeholder for version</span><br/>
         Issue report: <a href="https://forgemia.inra.fr/mathscell/csvweditor/-/issues">Forge MIA</a>
       </p>
     </div>
     <script>
+        let version="0.5.0";
+        let vdate="2024-09-17";
         let csvwForm = document.getElementById("csvw");
         let btn_add=document.getElementById("btn_add");
         let col_nb = document.getElementById("col_nb");
@@ -113,10 +115,17 @@
             "date": {"el": "input", "lab": "Date of CSV creation (*)", "type": "datetime-local", "class": "form-control", "value": "", "json": "dc:date"},
             "url": {"el": "input", "lab": "Url (*)", "type": "text", "class": "form-control", "placeholder": "CSV file name", "json": "url"},
             "title": {"el": "input", "lab": "Title", "type": "text", "class": "form-control", "placeholder": "Title (in Capitalized Form)", "json": "dc:title"},
-            "descr": {"el": "textarea", "lab": "Description", "type": "textarea", "rows": 5, "class": "form-control", "placeholder": "Description of CSV content", "json": "dc:description"},
+            "descr": {"el": "textarea", "lab": "Description", "type": "textarea", "rows": 3, "class": "form-control", "placeholder": "Description of CSV content", "json": "dc:description"},
             "creator": {"el": "input", "lab": "Creator (*)", "type": "text", "class": "form-control", "placeholder": "Person(s) or entity(s) who created CSV", "json": "dc:creator"},
             "source": {"el": "input", "lab": "Source of CSV file", "type": "text", "class": "form-control", "placeholder": "Software, device, ...", "json": "dc:source"},
         }
+        let fcol={// suff: dict of html attributes for columns
+            "name": {"el": "input", "type": "text", "placeholder": "Name", "class": "form-control", "json": "name"},
+            "descr": {"el": "textarea", "rows": 2, "placeholder": "Description (units, format, ...)", "class": "form-control", "json": "dc:description"},
+            "datatype": {"el": "input", "type": "text", "placeholder": "Data type", "list": "datatypes", "class": "form-control", "json": "datatype"},
+        }
+        // set version string
+        document.getElementById("version").innerHTML="Version: "+version+" ("+vdate+")";
         // complete the form
         for (id in form) {
             var di=form[id];
@@ -141,7 +150,6 @@
         // helper functions
         function set_date(sec="") {
             d=(sec === "" ? new Date() : new Date(sec));
-            //console.log("sec=", sec, "; d=", d);
             const offset = d.getTimezoneOffset() * 60 * 1000;
             d=new Date(d.getTime() - offset);
             date.value=d.toISOString().slice(0, 16);
@@ -151,51 +159,40 @@
             var n=col_nb.value;
             for (let i=0; i < n; i++) {
                 inp=document.getElementById(`col${col_nb.value}_name`);
-                //console.log("rm col ", i, col_nb);
                 if (inp === null)
                     rm_last_col();
-                else {
-                    break;                }
+                else
+                    break;
             }
             col_nb.value = Number(col_nb.value) + 1;
-            // title
-            var col = document.createElement("input");
-            col.setAttribute('type', 'text');
-            col.setAttribute('id', `col${col_nb.value}_name`);
-            col.setAttribute('placeholder', "Name");
-            col.setAttribute('class', "form-control");
-            // description
-            var colde = document.createElement("input");
-            colde.setAttribute('type', 'text');
-            colde.setAttribute('id', `col${col_nb.value}_descr`);
-            colde.setAttribute('placeholder', "Description (units, format, ...)");
-            colde.setAttribute('class', "form-control");
-            // datatype
-            var coldt = document.createElement("input");
-            coldt.setAttribute('type', 'search');
-            coldt.setAttribute('list', 'datatypes');
-            coldt.setAttribute('type', 'text');
-            coldt.setAttribute('id', `col${col_nb.value}_datatype`);
-            coldt.setAttribute('placeholder', "Data type");
-            coldt.setAttribute('class', "form-control");
-
+            // create form with column fields
+            var el;
+            for (let [csuf, di] of Object.entries(fcol)) {
+                for (let [attr, val] of Object.entries(di)) {
+                    switch (attr) {
+                        case "el":
+                            el=document.createElement(val);
+                            el.setAttribute("id", `col${col_nb.value}_`+csuf);
+                            csvwForm.insertBefore(el, btn_add);
+                            continue;
+                        case "json":
+                            continue;
+                        default:
+                            el.setAttribute(attr, val);
+                    }
+                }
+            }
             var lab = document.createElement("Label");
+            el=document.getElementById(`col${col_nb.value}_name`)
             lab.setAttribute('id', `col${col_nb.value}_lab`)
-            lab.setAttribute("for", col);
+            lab.setAttribute("for", el);
             lab.innerHTML = "Column "+col_nb.value;
-
-            csvwForm.insertBefore(col, btn_add);
-            csvwForm.insertBefore(colde, btn_add);
-            csvwForm.insertBefore(coldt, btn_add);
-            csvwForm.insertBefore(lab, col);
+            csvwForm.insertBefore(lab, el);
         }
         function rm_last_col() {
-            //console.log("in rm ", col_nb);
             if (col_nb.value > 0) {
-                for (suf of ["name", "descr", "datatype", "lab"]) {
-                    //console.log(`col${col_nb.value}_`+suf);
-                    let obj=document.getElementById(`col${col_nb.value}_`+suf)
-                    //console.log("obj=", obj);
+                for (csuf of Object.keys(fcol).concat("lab")) {
+                    let obj=document.getElementById(`col${col_nb.value}_`+csuf)
                     if (obj)
                         csvwForm.removeChild(obj);
                 }
@@ -210,45 +207,32 @@
             optk.setAttribute('id', `opt${opt_nb.value}_key`);
             optk.setAttribute('placeholder', "name");
             optk.setAttribute('class', "form-control");
-            optk.setAttribute('style', "display:inline-block;width:15%");
+            optk.setAttribute('style', "display:inline-block;width:100px;vertical-align:top;");
             // value
-            var optv = document.createElement("input");
+            var optv = document.createElement("textarea");
             optv.setAttribute('type', 'text');
             optv.setAttribute('id', `opt${opt_nb.value}_value`);
-            optv.setAttribute('placeholder', "value Or val1, val2, val3, ... if vector");
+            optv.setAttribute('placeholder', 'value Or ["val1", "val2"] if vector\nOr {"key1": "val1", "key2": "val2"} if Object');
             optv.setAttribute('class', "form-control");
-            optv.setAttribute('style', "display:inline-block;width:55%");
-            // is vector?
-            var isvec = document.createElement("input");
-            isvec.setAttribute('type', 'checkbox');
-            isvec.setAttribute('id', `opt${opt_nb.value}_isvec`);
+            optv.setAttribute('rows', "2");
+            optv.setAttribute('style', "display:inline-block;width:350px;vertical-align:top");
 
             var lab = document.createElement("Label");
             lab.setAttribute("id", `opt${opt_nb.value}_lab`);
             lab.setAttribute("for", optk);
-            lab.innerHTML = "<br/>Optional field "+opt_nb.value+" (";
-
-            var labv = document.createElement("Label");
-            labv.setAttribute("for", isvec);
-            labv.setAttribute('id', `opt${opt_nb.value}_labv`);
-            labv.innerHTML = " vector?)<br/>";
+            lab.innerHTML = "<br/>Optional field "+opt_nb.value+"<br/>";
 
             var btn=document.getElementById("lab_add_opt");
             csvwForm.insertBefore(optk, btn);
             csvwForm.insertBefore(optv, btn);
             csvwForm.insertBefore(lab, optk);
-            csvwForm.insertBefore(isvec, lab.nextSibling);
-            csvwForm.insertBefore(labv, isvec.nextSibling);
         }
         function rm_opt() {
             if (opt_nb.value > 0) {
-                //console.log("rm_opt ", opt_nb);
                 for (suf of ["key", "value", "isvec", "lab", "labv"]) {
-                    var obj=document.getElementById(`opt${opt_nb.value}_`+suf)
-                    if (obj) {
-                        //console.log("rm obj", obj);
+                    var obj=document.getElementById(`opt${opt_nb.value}_`+suf);
+                    if (obj)
                         csvwForm.removeChild(obj);
-                    }
                 }
                 opt_nb.value -= 1;
             }
@@ -258,34 +242,49 @@
             // complete JSON object from the csvw form
             // "common" part
             csv.json["@context"]="http://www.w3.org/ns/csvw";
+            csv.json["@prefix"]={"dc": "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/"}
             if (!("tables" in csv.json))
                 csv.json.tables=[{}];
-            for (id in form) {
-                di=form[id];
+            for (let [id, di] of Object.entries(form)) {
+                var val=document.getElementById(id).value;
+                if (val.charAt() == "[" || val.charAt() == "{")
+                    val=JSON.parse(val);
                 if ("json" in di)
-                    csv.json.tables[0][di["json"]]=id == "date" ? new Date(document.getElementById(id).value).toISOString() : document.getElementById(id).value;
+                    csv.json.tables[0][di["json"]]=id == "date" ? new Date(val).toISOString() : val;
             }
             // "by column" part
             if (!("tableSchema" in csv.json.tables[0]))
                 csv.json.tables[0]["tableSchema"]={};
             if (!("columns" in csv.json.tables[0]["tableSchema"]))
                 csv.json.tables[0]["tableSchema"]["columns"]=Array(Number(col_nb.value));
-            //console.log("before cols", csv.json.tables[0]["tableSchema"]["columns"]);
+            var val;
             for (var icol=0; icol < col_nb.value; icol++) {
-                csv.json.tables[0]["tableSchema"]["columns"][icol] = {
-                  "name": document.getElementById(`col${Number(icol)+1}_name`).value,
-                  "dc:description": document.getElementById(`col${Number(icol)+1}_descr`).value,
-                  "datatype": document.getElementById(`col${Number(icol)+1}_datatype`).value
-                };
-                //console.log(icol, csv.json.tables[0]["tableSchema"]["columns"][icol]);
+                csv.json.tables[0]["tableSchema"]["columns"][icol] = {};
+                for (let [csuf, di] of Object.entries(fcol)) {
+                    val=document.getElementById(`col${Number(icol)+1}_`+csuf).value;
+                    if (val.charAt() == "[" || val.charAt() == "{")
+                        val=JSON.parse(val);
+                    csv.json.tables[0]["tableSchema"]["columns"][icol][di["json"]]=val;
+                }
             }
-            //console.log("after cols", csv.json.tables[0]["tableSchema"]["columns"]);
             // "optional" part
             for (var iopt=0; iopt < opt_nb.value; iopt++) {
-                //console.log(document.getElementById(`opt${opt_nb.value}_isvec`));
-                val=document.getElementById(`opt${Number(iopt)+1}_value`).value;
-                val=document.getElementById(`opt${Number(iopt)+1}_isvec`).checked ? csvStringToArray(val)[0] : val;
+                var val=document.getElementById(`opt${Number(iopt)+1}_value`).value;
+                if (val.charAt() == "[" || val.charAt() == "{")
+                    val=JSON.parse(val);
                 csv.json.tables[0][document.getElementById(`opt${Number(iopt)+1}_key`).value]=val;
+            }
+            // "createdBy" part
+            csv.json["createdBy"]={
+              "dc:software": {
+                name: "CSVWEditor",
+                author: "Serguei Sokol",
+                copyright: "Copyright 2024, INRAE/INSA/CNRS",
+                project_home: "https://forgemia.inra.fr/mathscell/csvweditor",
+                url: location.href,
+                version: version,
+              },
+              "dc:date": new Date().toISOString()
             }
 
             var myBlob = new Blob([JSON.stringify(csv.json, null, 2)+"\n"], {type: "application/csvm+json"});
@@ -308,7 +307,6 @@
             let fl_files = evt.target.files; // JS FileList object
             // use the 1st file from the list
             let fl_file = fl_files[0];
-            //console.log(fl_file);
             csv.name=fl_file.name;
             csv.ext=csv.name.split(".").pop().toLowerCase();
             let reader = new FileReader(); // built in API
@@ -327,7 +325,6 @@
                 if (csv.ext !== "csvw") {
                     csvwForm.url.value=csv.name;
                     set_date(fl_file.lastModified);
-                    //document.getElementById( 'txtupl' ).innerHTML = .join("\n");
                     for (icol in csv.arr[0]) {
                         inp=document.getElementById(`col${col_nb.value}_name`);
                         inp.setAttribute("value", csv.arr[0][icol]);
@@ -337,17 +334,20 @@
                     csv.json={};
                 } else {
                     csv.json=JSON.parse(csv.txt);
-                    //console.info( 'csvw: ', csv.json );
                     var setj=new Set();
-                    for (id in form) {
-                        di=form[id];
+                    for (let [id, di] of Object.entries(form)) {
                         if ("json" in di) {
                             setj.add(di["json"]);
-                            if ("tables" in csv.json && csv.json.tables.constructor === Array && csv.json.tables.length > 0 && di["json"] in csv.json.tables[0])
+                            if ("tables" in csv.json && csv.json.tables.constructor === Array && csv.json.tables.length > 0 && di["json"] in csv.json.tables[0]) {
+                                var val=csv.json.tables[0][di["json"]];
                                 if (id == "date")
-                                    set_date(csv.json.tables[0][di["json"]]);
-                                else
-                                    document.getElementById(id).value=csv.json.tables[0][di["json"]];
+                                    set_date(val);
+                                else {
+                                    if (val.constructor === Array || val.constructor === Object)
+                                        val=JSON.stringify(val);
+                                    document.getElementById(id).value=val;
+                                }
+                            }
                         }
                     }
                     if ("tables" in csv.json && csv.json.tables.constructor === Array && csv.json.tables.length > 0 && "tableSchema" in csv.json.tables[0] && "columns" in csv.json.tables[0].tableSchema) {
@@ -356,8 +356,16 @@
                             if (col_nb.value <= icol)
                                 add_col();
                             document.getElementById(`col${Number(icol)+1}_name`).value=csv.json.tables[0].tableSchema.columns[icol].name;
-                            document.getElementById(`col${Number(icol)+1}_descr`).value=csv.json.tables[0].tableSchema.columns[icol]["dc:description"];
-                            document.getElementById(`col${Number(icol)+1}_datatype`).value=csv.json.tables[0].tableSchema.columns[icol].datatype;
+
+                            var val=csv.json.tables[0].tableSchema.columns[icol]["dc:description"];
+                            if (val.constructor === Array || val.constructor === Object)
+                                val=JSON.stringify(val);
+                            document.getElementById(`col${Number(icol)+1}_descr`).value=val;
+
+                            val=csv.json.tables[0].tableSchema.columns[icol].datatype;
+                            if (val.constructor === Array || val.constructor === Object)
+                                val=JSON.stringify(val);
+                            document.getElementById(`col${Number(icol)+1}_datatype`).value=val;
                         }
                     }
                     // optional fields
@@ -369,22 +377,10 @@
                             if (opt_nb.value <= iopt)
                                 add_opt();
                             document.getElementById(`opt${Number(iopt)+1}_key`).value=idj;
-                            if (csv.json.tables[0][idj].constructor === Array) {
-                                document.getElementById(`opt${Number(iopt)+1}_isvec`).checked=true;
-                                var line=[];
-                                for (item of csv.json.tables[0][idj]) {
-                                    item=String(item);
-                                    if (item.indexOf(',') !== -1 ||
-                                        item.indexOf('"') !== -1 ||
-                                        item.indexOf('\r') !== -1 ||
-                                        item.indexOf('\n') !== -1)
-                                        item='"' + item.replace(/"/g, '""') + '"';
-                                    line.push(item);
-                                }
-                                document.getElementById(`opt${Number(iopt)+1}_value`).value=line.join(", ");
-                            } else {
-                                document.getElementById(`opt${Number(iopt)+1}_value`).value=csv.json.tables[0][idj];
-                            }
+                            var val=csv.json.tables[0][idj];
+                            if (val.constructor === Array || val.constructor === Object)
+                                val=JSON.stringify(val);
+                            document.getElementById(`opt${Number(iopt)+1}_value`).value=val;
                             iopt++;
                         }
                     }
@@ -392,7 +388,6 @@
             };
 
             let on_reader_load = ( fl ) => {
-                //console.info( '. file reader load', fl );
                 return display_file; // a function
             };
 
@@ -404,16 +399,13 @@
         }
         function csvStringToArray(strData, sep=",") {
             // from https://gist.github.com/Jezternz/c8e9fafc2c114e079829974e3764db75
-            //const objPattern = new RegExp(("(\\,|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\\,\\r\\n]*))"),"gi");
             var objPattern = /(,|\r?\n|\r|^) *(?: *"([^\\"]*(?:""[^"]*)*)" *|([^,\r\n]*))/gi;
             if (sep != ",")
                 objPattern=new RegExp(objPattern.source.replaceAll(",", sep), "gi");
             if (sep == " ")
                 objPattern=new RegExp(objPattern.source.replaceAll(" *", ""), "gi");
-            //console.log(objPattern);
             let arrMatches = null, arrData = [[]];
             while (arrMatches = objPattern.exec(strData)){
-                //console.log("i=" + i + "\n" + arrMatches);
                 if (arrMatches[1].length && arrMatches[1] !== sep) arrData.push([]);
                 arrData[arrData.length - 1].push(//arrMatches[2] ?
                     //arrMatches[2].replace(new RegExp( "\"\"", "g" ), "\"") :
