@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>VTSV</title>
+    <style>
+        body {
+          width: 100vw;
+          background-color: #ddd;
+          font-family: sans-serif;
+        }
+        table {
+          border: 1px solid black;
+        }
+        th, td {
+          padding: 2px
+        }
+        th {
+          background-color: #CCCCCC;
+        }
+        tr:nth-child(odd) {
+          background-color: #AAAAAA;
+        }
+        tr:nth-child(even) {
+          background-color: #EEEEEE;
+        }
+        .cont {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .legal {
+          font-size: 10px;
+          padding: 1rem 10px;
+        }
+        .container {
+          //height: 100vh;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .form-control {
+          display: block;
+          width: 300px;
+          margin: 10px 0;
+          padding: 10px;
+          border-radius: 5px;
+          border: 2px solid #172432;
+        }
+        button {
+          display: inline-block;
+          background-color: #172432;
+          border: none;
+          color: #ddd;
+          padding: 10px 20px;
+          border-radius: 5px;
+        }
+    </style>
+    <script>
+        // helper functions
+        function toggle(nm_obj) {
+            var obj=document.getElementById(nm_obj);
+            if (obj.style.display == "block") obj.style.display = "none";
+            else obj.style.display = "block";
+            var alink=document.getElementById(nm_obj.replace("p", "a"));
+            if (alink != undefined) {
+                if (alink.innerHTML == "▼")
+                    alink.innerHTML = "▶";
+                else
+                    alink.innerHTML = "▼";
+            }
+        }
+        function xls_col_name(nr) {
+            let w=String.fromCharCode(((nr)%26)+65)
+            return (nr>26-1)? xls_column_name(Math.floor(nr/26)-1)+w:w
+        };
+        function txt2tab(txt, sep) {
+            if (txt == undefined)
+                return
+            if (sep == "")
+                sep=guess_sep(txt);
+            document.getElementById("cont").innerHTML = arr2tab(parseCSV(txt, sep));
+        }
+        function guess_sep(csvText) {
+            var sep2ncol={};
+            for (var sep of ["\t", ",", ";", ":", " "]) {
+                arr=parseCSV(csvText, sep, 3)
+                //console.log("try sep='"+sep+"'", arr);
+                if (arr.map(row => row.length).every(e=> e==arr[0].length))
+                    sep2ncol[sep]=arr[0].length;
+            }
+            //console.log(sep2ncol);
+            var k=Object.keys(sep2ncol);
+            return k.length ? 
+                k.reduce((sep, i) => sep2ncol[sep] >= sep2ncol[i] ? sep : i) :
+                "\t"
+        }
+        function parseCSV(csvText, separator = ",", rowlim=Infinity) {
+            // written by ChatGPT
+            // https://chatgpt.com/share/67fe29a0-97b4-8008-83f9-d6efd77e6a23
+            const rows = [];
+            let currentRow = [];
+            let currentCell = '';
+            let insideQuotes = false;
+            let escapeNext = false;
+            let i = 0;
+            let irow = 0;
+
+            const unescape = (str) => {
+            return str.replace(/\\(.)/g, (_, ch) => {
+              switch (ch) {
+                case 'n': return '\n';
+                case 'r': return '\r';
+                case 't': return '\t';
+                case '\\': return '\\';
+                case '"': return '"';
+                default: return ch;
+              }
+            });
+            };
+
+            while (i < csvText.length) {
+                const char = csvText[i];
+                const nextChar = csvText[i + 1];
+
+                if (insideQuotes) {
+                  if (char === '"' && nextChar === '"') {
+                    currentCell += '"'; // escaped double quote
+                    i += 2;
+                  } else if (char === '"') {
+                    insideQuotes = false;
+                    i++;
+                  } else {
+                    currentCell += char;
+                    i++;
+                  }
+                } else if (char === '"') {
+                  insideQuotes = true;
+                  i++;
+                } else if (char === '\\') {
+                  escapeNext = true;
+                  i++;
+                } else if (escapeNext) {
+                  currentCell += unescape('\\' + char);
+                  escapeNext = false;
+                  i++;
+                } else if (char === separator) {
+                  currentRow.push(currentCell);
+                  currentCell = '';
+                  i++;
+                } else if (char === '\n') {
+                  currentRow.push(currentCell);
+                  rows.push(currentRow);
+                  irow++;
+                  currentRow = [];
+                  currentCell = '';
+                  i++;
+                } else if (char === '\r' && nextChar === '\n') {
+                  currentRow.push(currentCell);
+                  rows.push(currentRow);
+                  irow++;
+                  currentRow = [];
+                  currentCell = '';
+                  i += 2;
+                } else if (char === '\r') {
+                  currentRow.push(currentCell);
+                  rows.push(currentRow);
+                  irow++;
+                  currentRow = [];
+                  currentCell = '';
+                  i++;
+                } else {
+                  currentCell += char;
+                  i++;
+                }
+                if (irow >= rowlim)
+                    break;
+            }
+
+            // Push final row if needed
+            if (insideQuotes) {
+                // Try to recover: close open quote and continue
+                currentRow.push(currentCell);
+                rows.push(currentRow);
+            } else if (currentCell || currentRow.length) {
+                currentRow.push(currentCell);
+                rows.push(currentRow);
+            }
+
+            return rows;
+        }
+
+        function handle_file_select( evt ) {
+            let fl_files = evt.target.files; // JS FileList object
+            // use the 1st file from the list
+            let fl_file = fl_files[0];
+            let reader = new FileReader(); // built in API
+            let display_file = ( e ) => { // parse and fill the table
+                txt = e.target.result;
+                txt2tab(txt, vtsvForm.sep.value);
+            };
+
+            // Closure to capture the file information.
+            reader.onload = display_file;
+
+            // Read the file as text.
+            reader.readAsText( fl_file );
+        }
+        function arr2tab(arr) {
+            if (arr.length == 0)
+                return "";
+            var ncol=arr[0].length;
+            str_tab="<table>\n<tr><th></th><th>"+Array.from({length: ncol}, (_, i) => xls_col_name(i)).join("</th><th>")+"</th></tr>\n";
+            str_tab += "<tr>"+arr.map((row,irow) => "<th>"+(irow == "0" ? "index" : irow)+"</th><td>"+row.map(s => s.replaceAll("\n", "<br/>")).join("</td><td>")+"</td>").join("</tr>\n<tr>");
+            str_tab += "</tr></table>\n";
+            return str_tab;
+        }
+    </script>
+</head>
+
+<body id="body">
+    <h1>View TSV (Tab Separated Values) file</h1>
+    <div id="container" class="container">
+      <form action="" id="vtsv", enctype="multipart/form-data">
+        <label for="upload">Upload TSV or CSV file to view</label>
+        <input id="upload" class="form-control" type="file" accept="text/csv,.tsv,.csv,.txt" name="files" size=30>
+        <label for="sep">Field separator: </label>
+        <select id="sep" class="form-control" style="display:inline-block;width:53%" onchange="txt2tab(txt, vtsvForm.sep.value)">
+            <option value="" selected="true">Guess from content</option>
+            <option value="&#9;">Tab character "\t"</option>
+            <option value=",">Comma ","</option>
+            <option value=";">Semicolon ";"</option>
+            <option value=":">Colon ":"</option>
+            <option value=" ">Space " "</option>
+        </select>
+      </form>
+    </div>
+    <div id=cont class=cont>Here will go data</div>
+    <div id=legal class=legal>
+      <p><a id="alegal" href="javascript: void(0);" onClick="toggle('plegal')" style="text-decoration: none">▶</a><b>Legal information about VTSV in HTML.</b></p>
+      <p id=plegal style="display:none;">
+        Author: Sergueï Sokol, INRAE/<a href="https://www.toulouse-biotechnology-institute.fr/">TBI</a>, <a href="https://www.toulouse-biotechnology-institute.fr/plateformes-plateaux/cellule-mathematiques/">Mathematics Cell</a><br>
+        Project home: <a href="https://forgemia.inra.fr/mathscell/vtsv_html">VTSV in HTML</a><br/>
+        Copyright: 2025 <a href="https://www.inrae.fr/">INRAE</a>/<a href="https://www.insa-toulouse.fr/">INSA</a>/<a href="https://www.cnrs.fr/">CNRS</a><br/>
+        License: <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC-BY</a><br/>
+        Version: 0.1.0 (2025-04-15)<br/>
+        Issue report: <a href="https://forgemia.inra.fr/mathscell/vtsv_html/-/issues">Forge MIA</a>
+      </p>
+    </div>
+    <script>
+        let vtsvForm = document.getElementById("vtsv");
+        let txt; // will contain file content
+        document.getElementById('upload').addEventListener('change', handle_file_select, false);
+    </script>
+</body>
+</html>
