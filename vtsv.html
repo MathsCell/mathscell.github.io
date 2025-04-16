@@ -59,6 +59,15 @@
     </style>
     <script>
         // helper functions
+        function dropHandler(ev) {
+            // Prevent default behavior (Prevent file from being opened)
+            ev.preventDefault();
+            read_file(ev.dataTransfer.files[0]);
+        }
+        function dragOverHandler(ev) {
+            // Prevent default behavior (Prevent file from being opened)
+            ev.preventDefault();
+        }
         function toggle(nm_obj) {
             var obj=document.getElementById(nm_obj);
             if (obj.style.display == "block") obj.style.display = "none";
@@ -86,12 +95,13 @@
             var sep2ncol={};
             for (var sep of ["\t", ",", ";", ":", " "]) {
                 arr=parseCSV(csvText, sep, 3)
-                //console.log("try sep='"+sep+"'", arr);
+                // store sep giving same ncol
                 if (arr.map(row => row.length).every(e=> e==arr[0].length))
                     sep2ncol[sep]=arr[0].length;
             }
             //console.log(sep2ncol);
             var k=Object.keys(sep2ncol);
+            // return sep giving max ncol
             return k.length ? 
                 k.reduce((sep, i) => sep2ncol[sep] >= sep2ncol[i] ? sep : i) :
                 "\t"
@@ -191,10 +201,7 @@
             return rows;
         }
 
-        function handle_file_select( evt ) {
-            let fl_files = evt.target.files; // JS FileList object
-            // use the 1st file from the list
-            let fl_file = fl_files[0];
+        function read_file(f) {
             let reader = new FileReader(); // built in API
             let display_file = ( e ) => { // parse and fill the table
                 txt = e.target.result;
@@ -205,7 +212,12 @@
             reader.onload = display_file;
 
             // Read the file as text.
-            reader.readAsText( fl_file );
+            //console.log("f=", f)
+            reader.readAsText(f);
+        }
+        function handle_file_select( evt ) {
+            // use the 1st file from the list
+            read_file(evt.target.files[0]);
         }
         function arr2tab(arr) {
             if (arr.length == 0)
@@ -219,12 +231,12 @@
     </script>
 </head>
 
-<body id="body">
+<body id="body" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
     <h1>View TSV (Tab Separated Values) file</h1>
     <div id="container" class="container">
       <form action="" id="vtsv", enctype="multipart/form-data">
-        <label for="upload">Upload TSV or CSV file to view</label>
-        <input id="upload" class="form-control" type="file" accept="text/csv,.tsv,.csv,.txt" name="files" size=30>
+        <label for="upload">Upload (or drag&amp;drop) TSV (CSV, TXT, ...) file to view</label>
+        <input id="upload" class="form-control" type="file" accept="text/csv,.tsv,.csv,.txt" name="files" size=30 onChange="handle_file_select(event)">
         <label for="sep">Field separator: </label>
         <select id="sep" class="form-control" style="display:inline-block;width:53%" onchange="txt2tab(txt, vtsvForm.sep.value)">
             <option value="" selected="true">Guess from content</option>
@@ -238,20 +250,19 @@
     </div>
     <div id=cont class=cont>Here will go data</div>
     <div id=legal class=legal>
-      <p><a id="alegal" href="javascript: void(0);" onClick="toggle('plegal')" style="text-decoration: none">▶</a><b>Legal information about VTSV in HTML.</b></p>
+      <p><a id="alegal" href="javascript: void(0);" onClick="toggle('plegal')" style="text-decoration: none">▶</a> <b>Legal information about VTSV in HTML.</b></p>
       <p id=plegal style="display:none;">
         Author: Sergueï Sokol, INRAE/<a href="https://www.toulouse-biotechnology-institute.fr/">TBI</a>, <a href="https://www.toulouse-biotechnology-institute.fr/plateformes-plateaux/cellule-mathematiques/">Mathematics Cell</a><br>
         Project home: <a href="https://forgemia.inra.fr/mathscell/vtsv_html">VTSV in HTML</a><br/>
         Copyright: 2025 <a href="https://www.inrae.fr/">INRAE</a>/<a href="https://www.insa-toulouse.fr/">INSA</a>/<a href="https://www.cnrs.fr/">CNRS</a><br/>
         License: <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC-BY</a><br/>
-        Version: 0.1.0 (2025-04-15)<br/>
+        Version: 0.2.0 (2025-04-16)<br/>
         Issue report: <a href="https://forgemia.inra.fr/mathscell/vtsv_html/-/issues">Forge MIA</a>
       </p>
     </div>
     <script>
         let vtsvForm = document.getElementById("vtsv");
         let txt; // will contain file content
-        document.getElementById('upload').addEventListener('change', handle_file_select, false);
     </script>
 </body>
 </html>
