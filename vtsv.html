@@ -141,6 +141,9 @@
                   } else if (char === '"') {
                     insideQuotes = false;
                     i++;
+                  } else if (char === '\\') {
+                    currentCell += nextChar; // escaped char
+                    i += 2;
                   } else {
                     currentCell += char;
                     i++;
@@ -149,12 +152,8 @@
                   insideQuotes = true;
                   i++;
                 } else if (char === '\\') {
-                  escapeNext = true;
-                  i++;
-                } else if (escapeNext) {
-                  currentCell += unescape('\\' + char);
-                  escapeNext = false;
-                  i++;
+                  currentCell += nextChar; // escaped char
+                  i += 2;
                 } else if (char === separator) {
                   currentRow.push(currentCell);
                   currentCell = '';
@@ -252,11 +251,11 @@
     <div id=legal class=legal>
       <p><a id="alegal" href="javascript: void(0);" onClick="toggle('plegal')" style="text-decoration: none">▶</a> <b>Legal information about VTSV in HTML.</b></p>
       <p id=plegal style="display:none;">
-        Author: Sergueï Sokol, INRAE/<a href="https://www.toulouse-biotechnology-institute.fr/">TBI</a>, <a href="https://www.toulouse-biotechnology-institute.fr/plateformes-plateaux/cellule-mathematiques/">Mathematics Cell</a><br>
+        Author: Sergueï Sokol, <a href="https://www.inrae.fr/">INRAE</a> / <a href="https://www.toulouse-biotechnology-institute.fr/">TBI</a> / <a href="https://www.toulouse-biotechnology-institute.fr/plateformes-plateaux/cellule-mathematiques/">Mathematics Cell</a><br>
         Project home: <a href="https://forgemia.inra.fr/mathscell/vtsv_html">VTSV in HTML</a><br/>
-        Copyright: 2025 <a href="https://www.inrae.fr/">INRAE</a>/<a href="https://www.insa-toulouse.fr/">INSA</a>/<a href="https://www.cnrs.fr/">CNRS</a><br/>
+        Copyright 2025, <a href="https://www.inrae.fr/">INRAE</a> / <a href="https://www.insa-toulouse.fr/">INSA</a> / <a href="https://www.cnrs.fr/">CNRS</a><br/>
         License: <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC-BY</a><br/>
-        Version: 0.2.0 (2025-04-16)<br/>
+        Version: 0.3.0 (2025-04-23)<br/>
         Issue report: <a href="https://forgemia.inra.fr/mathscell/vtsv_html/-/issues">Forge MIA</a>
       </p>
     </div>
