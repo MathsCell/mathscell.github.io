@@ -62,7 +62,8 @@
         function dropHandler(ev) {
             // Prevent default behavior (Prevent file from being opened)
             ev.preventDefault();
-            read_file(ev.dataTransfer.files[0]);
+            fobj=ev.dataTransfer.files[0];
+            read_file(fobj);
         }
         function dragOverHandler(ev) {
             // Prevent default behavior (Prevent file from being opened)
@@ -84,11 +85,12 @@
             let w=String.fromCharCode(((nr)%26)+65)
             return (nr>26-1)? xls_column_name(Math.floor(nr/26)-1)+w:w
         };
-        function txt2tab(txt, sep) {
+        function txt2tab(txt, sep, fname) {
             if (txt == undefined)
                 return
             if (sep == "")
                 sep=guess_sep(txt);
+            document.getElementById("fname").innerHTML = "File: " + fname;
             document.getElementById("cont").innerHTML = arr2tab(parseCSV(txt, sep));
         }
         function guess_sep(csvText) {
@@ -99,7 +101,6 @@
                 if (arr.map(row => row.length).every(e=> e==arr[0].length))
                     sep2ncol[sep]=arr[0].length;
             }
-            //console.log(sep2ncol);
             var k=Object.keys(sep2ncol);
             // return sep giving max ncol
             return k.length ? 
@@ -201,17 +202,18 @@
         }
 
         function read_file(f) {
+            // change doc title
+            document.title=f.name + " VTSV";
             let reader = new FileReader(); // built in API
             let display_file = ( e ) => { // parse and fill the table
                 txt = e.target.result;
-                txt2tab(txt, vtsvForm.sep.value);
+                txt2tab(txt, vtsvForm.sep.value, f.name);
             };
 
             // Closure to capture the file information.
             reader.onload = display_file;
 
             // Read the file as text.
-            //console.log("f=", f)
             reader.readAsText(f);
         }
         function handle_file_select( evt ) {
@@ -237,7 +239,7 @@
         <label for="upload">Upload (or drag&amp;drop) TSV (CSV, TXT, ...) file to view</label>
         <input id="upload" class="form-control" type="file" accept="text/csv,.tsv,.csv,.txt" name="files" size=30 onChange="handle_file_select(event)">
         <label for="sep">Field separator: </label>
-        <select id="sep" class="form-control" style="display:inline-block;width:53%" onchange="txt2tab(txt, vtsvForm.sep.value)">
+        <select id="sep" class="form-control" style="display:inline-block;width:53%" onchange="txt2tab(txt, vtsvForm.sep.value, fobj.name)">
             <option value="" selected="true">Guess from content</option>
             <option value="&#9;">Tab character "\t"</option>
             <option value=",">Comma ","</option>
@@ -247,6 +249,7 @@
         </select>
       </form>
     </div>
+    <div id=fname class=cont></div>
     <div id=cont class=cont>Here will go data</div>
     <div id=legal class=legal>
       <p><a id="alegal" href="javascript: void(0);" onClick="toggle('plegal')" style="text-decoration: none">▶</a> <b>Legal information about VTSV in HTML.</b></p>
@@ -255,13 +258,14 @@
         Project home: <a href="https://forgemia.inra.fr/mathscell/vtsv_html">VTSV in HTML</a><br/>
         Copyright 2025, <a href="https://www.inrae.fr/">INRAE</a> / <a href="https://www.insa-toulouse.fr/">INSA</a> / <a href="https://www.cnrs.fr/">CNRS</a><br/>
         License: <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC-BY</a><br/>
-        Version: 0.3.0 (2025-04-23)<br/>
+        Version: 0.4.0 (2025-09-10)<br/>
         Issue report: <a href="https://forgemia.inra.fr/mathscell/vtsv_html/-/issues">Forge MIA</a>
       </p>
     </div>
     <script>
         let vtsvForm = document.getElementById("vtsv");
         let txt; // will contain file content
+        let fobj; // will contain file object
     </script>
 </body>
 </html>
