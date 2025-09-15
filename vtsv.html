@@ -4,9 +4,12 @@
     <meta charset="utf-8">
     <title>VTSV</title>
     <style>
+        html {
+            height: 100%;
+        }
         body {
           width: 100vw;
-          background-color: #ddd;
+          height: 100%;
           font-family: sans-serif;
         }
         table {
@@ -85,21 +88,24 @@
             let w=String.fromCharCode(((nr)%26)+65)
             return (nr>26-1)? xls_column_name(Math.floor(nr/26)-1)+w:w
         };
-        function txt2tab(txt, sep, fname) {
+        function txt2tab(txt, skip, sep, fname) {
             if (txt == undefined)
                 return
             if (sep == "")
-                sep=guess_sep(txt);
+                sep=guess_sep(txt, skip);
             document.getElementById("fname").innerHTML = "File: " + fname;
-            document.getElementById("cont").innerHTML = arr2tab(parseCSV(txt, sep));
+            document.getElementById("cont").innerHTML = arr2tab(parseCSV(txt, skip, sep));
         }
-        function guess_sep(csvText) {
+        function guess_sep(csvText, skip) {
             var sep2ncol={};
             for (var sep of ["\t", ",", ";", ":", " "]) {
-                arr=parseCSV(csvText, sep, 3)
+                arr=parseCSV(csvText, skip, sep, 3)
                 // store sep giving same ncol
-                if (arr.map(row => row.length).every(e=> e==arr[0].length))
-                    sep2ncol[sep]=arr[0].length;
+                if (arr.length)
+                    if (arr.map(row => row.length).every(e=> e==arr[0].length))
+                        sep2ncol[sep]=arr[0].length;
+                else
+                    sep2ncol[sep]=0;
             }
             var k=Object.keys(sep2ncol);
             // return sep giving max ncol
@@ -107,8 +113,8 @@
                 k.reduce((sep, i) => sep2ncol[sep] >= sep2ncol[i] ? sep : i) :
                 "\t"
         }
-        function parseCSV(csvText, separator = ",", rowlim=Infinity) {
-            // written by ChatGPT
+        function parseCSV(csvText, skip=0, separator = ",", rowlim=Infinity) {
+            // written by ChatGPT, adapted by Serguei Sokol.
             // https://chatgpt.com/share/67fe29a0-97b4-8008-83f9-d6efd77e6a23
             const rows = [];
             let currentRow = [];
@@ -160,22 +166,28 @@
                   currentCell = '';
                   i++;
                 } else if (char === '\n') {
-                  currentRow.push(currentCell);
-                  rows.push(currentRow);
+                  if (irow >= skip) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                  }
                   irow++;
                   currentRow = [];
                   currentCell = '';
                   i++;
                 } else if (char === '\r' && nextChar === '\n') {
-                  currentRow.push(currentCell);
-                  rows.push(currentRow);
+                  if (irow >= skip) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                  }
                   irow++;
                   currentRow = [];
                   currentCell = '';
                   i += 2;
                 } else if (char === '\r') {
-                  currentRow.push(currentCell);
-                  rows.push(currentRow);
+                  if (irow >= skip) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                  }
                   irow++;
                   currentRow = [];
                   currentCell = '';
@@ -191,13 +203,16 @@
             // Push final row if needed
             if (insideQuotes) {
                 // Try to recover: close open quote and continue
-                currentRow.push(currentCell);
-                rows.push(currentRow);
+                if (irow >= skip) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                }
             } else if (currentCell || currentRow.length) {
-                currentRow.push(currentCell);
-                rows.push(currentRow);
+                if (irow >= skip) {
+                    currentRow.push(currentCell);
+                    rows.push(currentRow);
+                }
             }
-
             return rows;
         }
 
@@ -207,7 +222,7 @@
             let reader = new FileReader(); // built in API
             let display_file = ( e ) => { // parse and fill the table
                 txt = e.target.result;
-                txt2tab(txt, vtsvForm.sep.value, f.name);
+                txt2tab(txt, vtsvForm.skip.value, vtsvForm.sep.value, f.name);
             };
 
             // Closure to capture the file information.
@@ -237,9 +252,9 @@
     <div id="container" class="container">
       <form action="" id="vtsv", enctype="multipart/form-data">
         <label for="upload">Upload (or drag&amp;drop) TSV (CSV, TXT, ...) file to view</label>
-        <input id="upload" class="form-control" type="file" accept="text/csv,.tsv,.csv,.txt" name="files" size=30 onChange="handle_file_select(event)">
-        <label for="sep">Field separator: </label>
-        <select id="sep" class="form-control" style="display:inline-block;width:53%" onchange="txt2tab(txt, vtsvForm.sep.value, fobj.name)">
+        <br/><input id="upload" class="form-control" type="file" accept="text/csv,.tsv,.csv,.txt" name="files" size="30" onChange="handle_file_select(event)" style="display:inline-block;width:82%">
+        <br/><label for="sep">Field separator: </label>
+        <select id="sep" class="form-control" style="display:inline-block;width:56%" onchange="txt2tab(txt, vtsvForm.skip.value, vtsvForm.sep.value, fobj.name)">
             <option value="" selected="true">Guess from content</option>
             <option value="&#9;">Tab character "\t"</option>
             <option value=",">Comma ","</option>
@@ -247,6 +262,8 @@
             <option value=":">Colon ":"</option>
             <option value=" ">Space " "</option>
         </select>
+        <br/><label for="skip">Skip lines (0+): </label>
+        <input id="skip" class="form-control" type="number" value="0" style="display:inline-block;width:53%" onchange="txt2tab(txt, vtsvForm.skip.value, vtsvForm.sep.value, fobj.name)"/>
       </form>
     </div>
     <div id=fname class=cont></div>
@@ -258,7 +275,7 @@
         Project home: <a href="https://forgemia.inra.fr/mathscell/vtsv_html">VTSV in HTML</a><br/>
         Copyright 2025, <a href="https://www.inrae.fr/">INRAE</a> / <a href="https://www.insa-toulouse.fr/">INSA</a> / <a href="https://www.cnrs.fr/">CNRS</a><br/>
         License: <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC-BY</a><br/>
-        Version: 0.4.0 (2025-09-10)<br/>
+        Version: 0.5.0 (2025-09-15)<br/>
         Issue report: <a href="https://forgemia.inra.fr/mathscell/vtsv_html/-/issues">Forge MIA</a>
       </p>
     </div>
