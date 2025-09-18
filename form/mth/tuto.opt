@@ -1,0 +1,6 @@
+Name	Value
+dt	2
+tmax	10
+nsubdiv_dt	5
+commandArgs	--noscale --time_order=2 --irand --iseries 1:10 --seed 777
+posttreat_R	plot_ilab.R

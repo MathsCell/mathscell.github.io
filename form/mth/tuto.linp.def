@@ -1,0 +1,6 @@
+# Created by 'txt2ftbl --prefix tuto'
+# Date: 2025-09-09 16:36:26 CEST +0200
+# influx_si version: 7.3.0.90
+# If edited by hand, remove these comments.
+Id	Comment	Specie	Isotopomer	Value
+		A_in	1	1.0

@@ -1,0 +1,5 @@
++ see shaded plots (seems not always working) [alpha was too low]
++ p-value 0.1 but says OK for 95% confidence [OK, p-value must be <= 0.95]
++ vtsv.html: make change the title to file name. Show the file name in the page too. [done]
++ vtsv: add skip parameter [done 2025-09-15]
++ vtsv: full page as zone for dropping [done 2025-09-15]

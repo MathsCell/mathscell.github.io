@@ -1,0 +1,13 @@
+# Created by 'txt2ftbl --inst --prefix tuto'
+# Date: 2025-09-09 17:29:25 CEST +0200
+# influx_si version: 7.3.0.90
+# If edited by hand, remove these comments.
+Id	Comment	Name	Kind	Type	Value
+		A	METAB	C	0.1
+		B	METAB	C	0.1
+		r_1	NET	D	0.2E0
+		r_in	NET	D	0.2E0
+		r_out	NET	F	0.1E0
+		r_in	XCH	C	0.0
+		r_out	XCH	C	0.0
+		r_1	XCH	F	0.01

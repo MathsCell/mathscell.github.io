@@ -1,0 +1,25 @@
+flowchart TB
+    subgraph tuto
+    direction TB
+
+    id2:::metab_i@{label: "A<sub>in</sub>", shape: rounded} -->|r<sub>in</sub>| id1:::metab@{label: "A", shape: rounded}
+    id1:::metab@{label: "A", shape: rounded} <==>|r<sub>1</sub>| id3:::metab@{label: "B", shape: rounded}
+    id3:::metab@{label: "B", shape: rounded} -->|r<sub>out</sub>| id4:::metab_o@{label: "B<sub>out</sub>", shape: rounded}
+
+    end
+    subgraph Legend
+        direction LR
+        id1000000:::metab@{label: "Internal metabolite", shape: rounded} ~~~ id1000010:::empty@{label: " "}
+        id1000001:::metab_i@{label: "Input metabolite", shape: rounded} ~~~ id1000011:::empty@{label: " "}
+        id1000002:::metab_o@{label: "Output metabolite", shape: rounded} ~~~ id1000012:::empty@{label: " "}
+        id1000003:::metab_d@{label: "Dead-end metabolite", shape: rounded} ~~~ id1000013:::empty@{label: " "}
+        id1000004:::empty@{label: " "} -->|Non reversible reaction| id1000005:::empty@{label: " "}
+        id1000006:::empty@{label: " "} <==>|Reversible reaction| id1000007:::empty@{label: " "}
+    end
+    tuto ~~~ Legend
+classDef metab fill:#ffffff
+classDef metab_i fill:#BED3C3
+classDef metab_o fill:#FB7C72
+classDef metab_d fill:#C7A070
+classDef reac height:0, width: 0
+classDef empty height:0, width: 0
