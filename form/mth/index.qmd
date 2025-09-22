@@ -9,6 +9,8 @@ format:
       theme: neutral
 ---
 
+This tutorial support can be found at [https://mathscell.github.io/form/mth/](https://mathscell.github.io/form/mth/)
+
 # Introduction to `influx_si`
 
 `influx_si` can be used to estimate metabolic fluxes and concentrations in metabolically stationnary mode using two different labeling regimes:
