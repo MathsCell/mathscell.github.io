@@ -9,14 +9,16 @@ format:
       theme: neutral
 ---
 
-This tutorial support can be found at [https://mathscell.github.io/form/mth/](https://mathscell.github.io/form/mth/)
+This tutorial support can be found at <https://mathscell.github.io/form/mth/>
+
+![](images/qrmth.svg)
 
 # Introduction to `influx_si`
 
-`influx_si` can be used to estimate metabolic fluxes and concentrations in metabolically stationnary mode using two different labeling regimes:
+`influx_si` can be used to estimate metabolic fluxes and concentrations in metabolically stationary mode using two different labeling regimes:
 
 -   stationary labeling =\> `influx_s`
--   instationnary labeling =\> `influx_i` The term `influx_si` is used when a affirmation applies to both regimes.
+-   instationary labeling =\> `influx_i` The term `influx_si` is used when a affirmation applies to both regimes.
 
 ## The goals of this tutorial
 
@@ -26,13 +28,13 @@ We'll try to:
 -   simulate measurement data;
 -   and estimate fluxes and concentrations.
 
-## Prerequisities
+## Prerequisites
 
 ### Conda installation
 
 If not yet done, install miniconda from [download page](https://www.anaconda.com/docs/getting-started/miniconda/install) E.g. on windows you can do:
 
-```
+```         
 $ curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe -o .\miniconda.exe
 $ start /wait "" .\miniconda.exe /S
 $ del .\miniconda.exe
@@ -40,7 +42,7 @@ $ del .\miniconda.exe
 
 Now we configure our conda installation by removing the channel `defaults` and adding `bioconda` and `conda-forge`.
 
-```
+```         
 conda config --remove channels defaults
 conda config --add channels bioconda
 conda config --add channels conda-forge
@@ -54,20 +56,20 @@ Open "Anaconda promt" from Windows menu.
 
 In conda terminal, create new environment for this tutorial
 
-```
+```         
 $ conda create -n tuto influx_si
 $ conda activate tuto
 ```
 
 Yous should see `(tuto)` in a prompt now. Let check `influx_si`'s version:
 
-```
+```         
 $ influx_s --v
 ```
 
 Should show `7.4.1`. If not, run:
 
-```
+```         
 $ conda install influx_si=7.4.1
 ```
 
@@ -92,22 +94,22 @@ R -e "library(arrApply)"
 
 ![](tuto.svg){fig-align="left" width="10cm"}
 
-Metabolites `A` and `B` are the internal metabolites, `A_in` is the input, `B_out` is the output metabolites. They are not participating in balance equations as they can be consumed/accumulated. Only internal metabolites are considired as stationnary and participate in mass and label balance. The reaction `r_1` is a reversible reaction between `A` and `B`. It means that the exchange flux `r_1.xch` can be non 0. Reactions `r_in` and `r_out` are the input and output reactions, respectively. The fluxes of these reactions are not reversible, i.e. their exchange fluxes are 0. This is mandatory. Otherwise, a terminal internal metabolite would be considered as "dead-end", i.e. the net flux is 0 but the exchange flux is not.
+Metabolites `A` and `B` are the internal metabolites, `A_in` is the input, `B_out` is the output metabolites. They are not participating in balance equations as they can be consumed/accumulated. Only internal metabolites are considered as stationary and participate in mass and label balance. The reaction `r_1` is a reversible reaction between `A` and `B`. It means that the exchange flux `r_1.xch` can be non 0. Reactions `r_in` and `r_out` are the input and output reactions, respectively. The fluxes of these reactions are not reversible, i.e. their exchange fluxes are 0. This is mandatory. Otherwise, a terminal internal metabolite would be considered as "dead-end", i.e. the net flux is 0 but the exchange flux is not.
 
 ## Creating first file `tuto.netw`
 
 Create a directory `tuto` where all our work (input files and results) will reside:
 
-```
+```         
 $ mkdir tuto
 $ cd tuto
 ```
 
-`influx_si` relies on MTF (Multiple TSV Fies) input format. It includes several files, each providing a particular type of information. The central one – the network file with extension `.netw`.
+`influx_si` relies on MTF (Multiple TSV Files) input format. It includes several files, each providing a particular type of information. The central one – the network file with extension `.netw`.
 
 Edit file `tuto.netw` in [Notepad++](https://notepad-plus-plus.org/downloads/ "plain text editor") or alike editor to have the following content:
 
-```
+```         
 r_in:  A_in (a) -> A (a)
 r_1:   A (a) <-> B (a)
 r_out: B (a) -> B_out (a)
@@ -214,7 +216,7 @@ Backup `tuto.miso` in `tuto.miso.save` and copy `tuto_res/tuto.miso.sim` to `tut
 
 Now, rerunning `influx_i` produce PDF with simulated (smooth lines) and "measured" (dots with broken lines) data. They are perfectly aligned because we have used for starting point the same flux and metabolite values as for measurement simulation. Let change the starting point 0.2 for `r_out` in `.tvar` file by 0.1 (first, rename `tuto.tvar.def` to `tuto.tvar`):
 
-```
+```         
 r_in NET F 0.2     ->      r_in NET F 0.1
 ```
 
@@ -222,7 +224,7 @@ After running `influx_i`, in the PDF, we can see a significant difference betwee
 
 Running `influx_i` again and taking a look at `tuto_res/tuto.log`, we can see that flux estimation was done in 5 iterations (may slightly vary in your experiments):
 
-```
+```         
 <snip>
 Starting point
 it=0    res=246.4894
@@ -241,12 +243,12 @@ But are estimated values we obtained are correct? Coinciding simulated and measu
 In real experiments, with complex networks, it can be helpful to rerun `influx_si` from different starting points and then select the solution reaching lowest cost value. It can be done using options `--irand` (use random starting point) and `--iseries 1:10` (use ten staring points). We add them to `commandArgs` in `tuto.opt` file:
 
 |  |  |
-|------------------|------------------------------------------------------|
+|----|----|
 | `commandArgs` | `--noscale --time_order=2 --irand --iseries 1:10 --seed 777` |
 
 In `tuto_res/tuto.log` we can see how fitting was going for all 10 starting points:
 
-```
+```         
 <snip>
 Starting point.V01
 it=0    res=74.58354
